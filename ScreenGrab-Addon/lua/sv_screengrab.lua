@@ -1,3 +1,5 @@
+require("txtjpg4")
+
 util.AddNetworkString("screengrab_start")
 util.AddNetworkString("screengrab_part")
 util.AddNetworkString("screengrab_fwd_init")
@@ -12,7 +14,7 @@ hook.Add("PlayerSay", "screengrab_playersay", function( ply, said )
 	end
 end)
 
-SCRG.CanRun = { "STEAM_0:0:25994530" }
+SCRG.CanRun = {} -- Here you can add SteamIDs manually to allow access
 
 function SCRG.CheckArgs( ply, args )
 	if !ply:IsAdmin() and !table.HasValue(SCRG.CanRun, ply:SteamID()) then
@@ -61,6 +63,17 @@ function SCRG.CheckArgs( ply, args )
 	net.Send( targ )
 end
 
+function SCRG.SaveFile(name,data)
+	if not file.Exists("screengrabs","DATA") then
+		file.CreateDir("screengrabs")
+	end
+	MsgN("Saved to screengrabs/"..name)
+	file.Write("screengrabs/"..name,data)
+	if TxtJpg("screengrabs/"..name)!="error" then
+		file.Delete("screengrabs/"..name)
+	end
+end
+
 concommand.Add("screengrab_player", function( ply, cmd, args )
 	SCRG.CheckArgs( ply, args)
 end)
@@ -75,6 +88,7 @@ net.Receive("screengrab_start", function( x, ply )
 	local numparts = net.ReadUInt( 32 )
 
 	ply.SG.LEN = numparts
+	ply.SG.DATA = ""
 
 	if IsValid( ply.SG.INIT ) then
 		net.Start("screengrab_fwd_init")
@@ -109,13 +123,13 @@ net.Receive("screengrab_part", function( x, ply )
 	net.Send( ply.SG.INIT )
 
 	ply.SG.COUNT = ply.SG.COUNT + 1 
+	ply.SG.DATA = ply.SG.DATA..util.Decompress(data)
 	if ply.SG.COUNT == ply.SG.LEN then
 		MsgN("Finished SG")
+		SCRG.SaveFile(os.date("%m.%d.%Y-%H.%M.%S-"..ply:SteamID64()..".txt"),ply.SG.DATA)
 		ply.SG = nil
 	else
 		net.Start("screengrab_part")
 		net.Send( ply )
 	end
-
-
 end)

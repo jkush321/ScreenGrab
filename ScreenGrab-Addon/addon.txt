@@ -1,0 +1,11 @@
+"AddonInfo"
+
+{
+	"name"		"Screengrab 2"
+	"version"	"1"
+	"up_date"	"1"
+	"author_name"	"_Pablo and jkush321"
+	"author_email"	"jkush321@infacraft.net"
+	"author_url"	"infacraft.net"
+	"info"		"See their screens. Good at checking for wallhack."
+}
